@@ -13,6 +13,11 @@
         "**/.golangci.yaml"
     ],
     "words": [
-        "devcontainer"
+        "devcontainer",
+        "caarlos0",
+        "bocchi",
+        "fnai",
+        "disgoorg",
+        "disgo"
     ]
 }
