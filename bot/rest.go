@@ -2,6 +2,7 @@ package bot
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/disgoorg/disgo/discord"
 	"github.com/disgoorg/disgo/rest"
@@ -9,12 +10,14 @@ import (
 )
 
 type restClient struct {
-	client rest.Rest
+	client       rest.Rest
+	excludeNames []string
 }
 
-func NewRestClient(token string) restClient {
+func NewRestClient(token string, excludeName ...string) restClient {
 	return restClient{
-		client: rest.New(rest.NewClient(token)),
+		client:       rest.New(rest.NewClient(token)),
+		excludeNames: excludeName,
 	}
 }
 
@@ -25,6 +28,17 @@ func (restClient restClient) GetChannelMessage(channelID snowflake.ID, limit int
 	}
 	var allMessageArray []string
 	for _, msg := range messages {
+		excludeFlag := false
+		for _, name := range restClient.excludeNames {
+			if name == msg.Author.Username {
+				excludeFlag = true
+				break
+			}
+		}
+		if excludeFlag {
+			continue
+		}
+		log.Println(msg.Content)
 		allMessageArray = append(allMessageArray, msg.Content)
 	}
 	return allMessageArray, nil
