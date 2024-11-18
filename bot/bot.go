@@ -12,6 +12,7 @@ import (
 	"github.com/disgoorg/disgo/bot"
 	"github.com/disgoorg/disgo/handler"
 	"github.com/disgoorg/snowflake/v2"
+	"github.com/yama-is-bocchi/fnai/llm"
 )
 
 type originBot struct {
@@ -19,7 +20,7 @@ type originBot struct {
 	client  bot.Client
 }
 
-func New(token, guildID string) (*originBot, error) {
+func NewBot(token, guildID string, llm *llm.LLM) (*originBot, error) {
 	parsedGuildID, err := snowflake.Parse(guildID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse to guildID:%w", err)
@@ -27,7 +28,7 @@ func New(token, guildID string) (*originBot, error) {
 	restClient := NewRestClient(token)
 	client, err := disgo.New(token,
 		bot.WithDefaultGateway(),
-		bot.WithEventListeners(createCommandHandler(restClient)))
+		bot.WithEventListeners(createCommandHandler(restClient, llm)))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create discord client:%w", err)
 	}
