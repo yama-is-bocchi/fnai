@@ -25,7 +25,9 @@ func main() {
 		log.Fatal("failed to initialize discord bot:", err)
 	}
 	// コマンドusage
-    
+	if err := originBot.Listen(); err != nil {
+		log.Fatal("failed to listen command:", err)
+	}
 	// llm登録
 	// リッスン
 }
