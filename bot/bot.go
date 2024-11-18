@@ -3,6 +3,7 @@ package bot
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"syscall"
@@ -23,9 +24,10 @@ func New(token, guildID string) (*originBot, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse to guildID:%w", err)
 	}
+	restClient := NewRestClient(token)
 	client, err := disgo.New(token,
 		bot.WithDefaultGateway(),
-		bot.WithEventListeners(createCommandHandler()))
+		bot.WithEventListeners(createCommandHandler(restClient)))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create discord client:%w", err)
 	}
@@ -43,7 +45,7 @@ func (ogBot originBot) Listen() error {
 	if err := ogBot.client.OpenGateway(context.TODO()); err != nil {
 		return fmt.Errorf("failed to open gateway:%w", err)
 	}
-
+	log.Println("discord bot running...")
 	s := make(chan os.Signal, 1)
 	signal.Notify(s, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-s
