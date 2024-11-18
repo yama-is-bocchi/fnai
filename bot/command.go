@@ -24,12 +24,12 @@ func createCommandHandler(restClient restClient) *handler.Mux {
 	command.Use(middleware.Logger)
 	command.Group(func(router handler.Router) {
 		router.Use(middleware.Print("group1"))
-		router.Command("/sum", handleContent(restClient, "OK")) // ここにコマンド入力.
+		router.Command("/sum", submitLLMHandler(restClient, "OK")) // ここにコマンド入力.
 	})
 	return command
 }
 
-func handleContent(restClient restClient, content string) handler.CommandHandler {
+func submitLLMHandler(restClient restClient, content string) handler.CommandHandler {
 	return func(event *handler.CommandEvent) error {
 		allMessage, err := restClient.GetChannelMessage(event.Channel().ID(), 0)
 		if err != nil {
