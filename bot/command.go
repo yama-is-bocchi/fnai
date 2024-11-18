@@ -1,7 +1,6 @@
 package bot
 
 import (
-	"fmt"
 	"log"
 	"strings"
 
@@ -32,17 +31,24 @@ func createCommandHandler(restClient restClient, llm *llm.LLM) *handler.Mux {
 
 func submitLLMHandler(restClient restClient, llm *llm.LLM) handler.CommandHandler {
 	return func(event *handler.CommandEvent) error {
-		allMessage, err := restClient.GetChannelMessage(event.Channel().ID(), 0)
-		if err != nil {
-			return fmt.Errorf("failed to get channel message:%wc", err)
-		}
-		if err := restClient.SendMessage(event.Channel().ID(), "LLMで解析中..."); err != nil {
-			return fmt.Errorf("failed to create messages:%w", err)
-		}
-		allConversion := strings.Join(allMessage, "\n")
-		log.Println(allConversion)
-		// ここでLLMに送信.
-		// return event.CreateMessage(discord.MessageCreate{Content: content})
-		return nil
+		go func() {
+			allMessage, err := restClient.GetChannelMessage(event.Channel().ID(), 0,)
+			if err != nil {
+				log.Printf("failed to get channel message: %v", err)
+				restClient.SendMessage(event.Channel().ID(), "メッセージの取得に失敗しました。")
+				return
+			}
+
+			message, err := llm.SendMessage(strings.Join(allMessage, "\n"))
+			if err != nil {
+				log.Printf("failed to send message: %v", err)
+				restClient.SendMessage(event.Channel().ID(), "解析中にエラーが発生しました。")
+				return
+			}
+			if err := restClient.SendMessage(event.Channel().ID(), message); err != nil {
+				log.Printf("failed to send result message: %v", err)
+			}
+		}()
+		return event.CreateMessage(discord.MessageCreate{Content: "解析を開始しました..."})
 	}
 }

@@ -1,8 +1,6 @@
 package llm
 
 import (
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -17,6 +15,16 @@ type LLM struct {
 type createRequest struct {
 	Name      string `json:"name"`
 	ModelFile string `json:"modelfile"`
+}
+
+type chatRequest struct {
+	Model    string    `json:"model"`
+	Messages []message `json:"messages"`
+}
+
+type message struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
 }
 
 func New(baseURL *url.URL, modelFilePath string) (LLM, error) {
@@ -50,21 +58,15 @@ func (llm *LLM) CreateModel(modelName string, useModelFile bool) error {
 	return nil
 }
 
-// LLMのAPIサーバーに送信するhttpリクエストの共通処理.
-func utilRequest[T any](data T, url string) (*http.Response, error) {
-	byteData, err := json.Marshal(data)
+func (llm LLM) SendMessage(targetMessage string) (string, error) {
+	resp, err := utilRequest(chatRequest{Model: llm.model, Messages: []message{{Role: "user", Content: targetMessage}}},
+		llm.baseurl.JoinPath("api", "chat").String())
 	if err != nil {
-		return nil, fmt.Errorf("failed to marshal json data:%v", err)
+		return "", fmt.Errorf("failed to submit chat request:%w", err)
 	}
-	request, err := http.NewRequest("POST", url, bytes.NewBuffer(byteData))
+	respMessage, err := encodeNdJSON(resp)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create new pull request:%v", err)
+		return "", fmt.Errorf("failed to analysis nd json:%w", err)
 	}
-	request.Header.Set("Content-Type", "application/json")
-	httpClient := &http.Client{}
-	resp, err := httpClient.Do(request)
-	if err != nil {
-		return nil, fmt.Errorf("failed to send pull request:%v", err)
-	}
-	return resp, nil
+	return respMessage, nil
 }

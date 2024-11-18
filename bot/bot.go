@@ -20,12 +20,12 @@ type originBot struct {
 	client  bot.Client
 }
 
-func NewBot(token, guildID string, llm *llm.LLM) (*originBot, error) {
+func NewBot(token, guildID, discordBotName string, llm *llm.LLM) (*originBot, error) {
 	parsedGuildID, err := snowflake.Parse(guildID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse to guildID:%w", err)
 	}
-	restClient := NewRestClient(token)
+	restClient := NewRestClient(token, discordBotName)
 	client, err := disgo.New(token,
 		bot.WithDefaultGateway(),
 		bot.WithEventListeners(createCommandHandler(restClient, llm)))
