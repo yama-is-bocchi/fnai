@@ -1,0 +1,24 @@
+services:
+  app:
+    build: .
+    restart: always
+    env_file: .env
+    dns:
+      - 8.8.8.8
+      - 8.8.4.4
+      - 192.168.0.254
+    volumes:
+      - ./.deploy/model/ModelFile:/workdir/.deploy/model/ModelFile:ro
+
+  api_server:
+    build:
+      context: .
+      dockerfile: ./.deploy/model/Dockerfile
+    restart: always
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama:/root/.ollama
+
+volumes:
+  ollama:

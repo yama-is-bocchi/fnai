@@ -32,6 +32,9 @@ func main() {
 	if err != nil {
 		log.Fatal("failed to register llm:", err)
 	}
+	if err := llm.CreateModel(config.Model, true); err != nil {
+		log.Fatal("failed to create model:", err)
+	}
 	// ボット登録
 	originBot, err := bot.NewBot(config.DiscordToken, config.GuildID, &llm)
 	if err != nil {
