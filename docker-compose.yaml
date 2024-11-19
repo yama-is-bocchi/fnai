@@ -1,7 +1,6 @@
 services:
   app:
     build: .
-    restart: always
     env_file: .env
     dns:
       - 8.8.8.8
@@ -14,7 +13,6 @@ services:
     build:
       context: .
       dockerfile: ./.deploy/model/Dockerfile
-    restart: always
     ports:
       - "11434:11434"
     volumes:
